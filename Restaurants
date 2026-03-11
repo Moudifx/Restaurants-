@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Restaurant Ordering</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background:#f4f4f4;
+}
+
+header{
+background:#e74c3c;
+color:white;
+padding:20px;
+text-align:center;
+font-size:28px;
+}
+
+.search{
+text-align:center;
+padding:10px;
+}
+
+.search input{
+padding:10px;
+width:80%;
+max-width:400px;
+}
+
+.categories{
+text-align:center;
+margin-bottom:10px;
+}
+
+.categories button{
+margin:5px;
+padding:10px 15px;
+border:none;
+background:#333;
+color:white;
+border-radius:5px;
+cursor:pointer;
+}
+
+.menu{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+padding:20px;
+}
+
+.item{
+background:white;
+border-radius:10px;
+padding:15px;
+text-align:center;
+box-shadow:0 3px 8px rgba(0,0,0,0.2);
+}
+
+.item img{
+width:100%;
+height:150px;
+object-fit:cover;
+border-radius:10px;
+}
+
+button.add{
+background:#27ae60;
+color:white;
+border:none;
+padding:10px;
+margin-top:10px;
+border-radius:5px;
+cursor:pointer;
+}
+
+.cart{
+background:white;
+margin:20px;
+padding:20px;
+border-radius:10px;
+}
+
+.cart button{
+margin:3px;
+}
+
+.orderbtn{
+background:#25D366;
+padding:15px;
+width:100%;
+font-size:18px;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>My Restaurant</header>
+
+<div class="search">
+<input type="text" placeholder="Search food..." onkeyup="searchFood(this.value)">
+</div>
+
+<div class="categories">
+<button onclick="filterMenu('all')">All</button>
+<button onclick="filterMenu('burger')">Burgers</button>
+<button onclick="filterMenu('pizza')">Pizza</button>
+<button onclick="filterMenu('drink')">Drinks</button>
+</div>
+
+<div class="menu" id="menu"></div>
+
+<div class="cart">
+
+<h2>Your Order</h2>
+
+<ul id="cartList"></ul>
+
+<h3 id="total">Total: $0</h3>
+
+<h3>Delivery Address</h3>
+<input id="address" placeholder="Enter your address" style="width:100%;padding:10px">
+
+<br><br>
+
+<button class="orderbtn" onclick="sendOrder()">Order via WhatsApp</button>
+
+</div>
+
+<script>
+
+let menu=[
+
+{name:"Cheese Burger",price:6,category:"burger",img:"burger.jpg"},
+{name:"Double Burger",price:8,category:"burger",img:"burger2.jpg"},
+{name:"Pepperoni Pizza",price:10,category:"pizza",img:"pizza.jpg"},
+{name:"Chicken Pizza",price:9,category:"pizza",img:"pizza2.jpg"},
+{name:"Cola",price:2,category:"drink",img:"cola.jpg"},
+{name:"Orange Juice",price:3,category:"drink",img:"juice.jpg"}
+
+]
+
+let cart=[]
+
+function renderMenu(list){
+
+let container=document.getElementById("menu")
+container.innerHTML=""
+
+list.forEach((item,index)=>{
+
+container.innerHTML+=`
+
+<div class="item">
+
+<img src="${item.img}">
+
+<h3>${item.name}</h3>
+
+<p>$${item.price}</p>
+
+<button class="add" onclick="addToCart(${index})">
+Add to Cart
+</button>
+
+</div>
+
+`
+
+})
+
+}
+
+renderMenu(menu)
+
+function filterMenu(cat){
+
+if(cat==="all"){
+renderMenu(menu)
+return
+}
+
+let filtered=menu.filter(i=>i.category===cat)
+renderMenu(filtered)
+
+}
+
+function searchFood(text){
+
+text=text.toLowerCase()
+
+let filtered=menu.filter(i=>i.name.toLowerCase().includes(text))
+
+renderMenu(filtered)
+
+}
+
+function addToCart(index){
+
+let item=menu[index]
+
+let found=cart.find(i=>i.name===item.name)
+
+if(found){
+found.qty++
+}else{
+cart.push({...item,qty:1})
+}
+
+updateCart()
+
+}
+
+function updateCart(){
+
+let list=document.getElementById("cartList")
+let total=0
+
+list.innerHTML=""
+
+cart.forEach((item,i)=>{
+
+let price=item.price*item.qty
+total+=price
+
+list.innerHTML+=`
+
+<li>
+${item.name} x${item.qty} - $${price}
+<button onclick="cart[${i}].qty++;updateCart()">+</button>
+<button onclick="cart[${i}].qty--;if(cart[${i}].qty<=0)cart.splice(${i},1);updateCart()">-</button>
+</li>
+
+`
+
+})
+
+document.getElementById("total").innerText="Total: $"+total
+
+}
+
+function sendOrder(){
+
+let phone="1234567890"
+
+let address=document.getElementById("address").value
+
+let message="Hello I want to order:%0A"
+
+cart.forEach(item=>{
+message+=item.name+" x"+item.qty+"%0A"
+})
+
+message+="Address: "+address
+
+let url="https://wa.me/"+phone+"?text="+encodeURIComponent(message)
+
+window.open(url)
+
+}
+
+</script>
+
+</body>
+</html>
